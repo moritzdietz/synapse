@@ -726,13 +726,13 @@ class StatsStore(StateDeltasStore):
             return {}, {}
 
         if isinstance(self.database_engine, PostgresEngine):
-            new_bytes_expression = "OCTET_LENGTH(json)"
+            new_bytes_expression = "OCTET_LENGTH(ej.json)"
         else:
-            new_bytes_expression = "LENGTH(CAST(json AS BLOB))"
+            new_bytes_expression = "LENGTH(CAST(ej.json AS BLOB))"
 
         sql = """
             SELECT events.room_id, COUNT(*) AS new_events, SUM(%s) AS new_bytes
-            FROM events INNER JOIN event_json USING (event_id)
+            FROM events INNER JOIN event_json ej USING (event_id)
             WHERE (? < stream_ordering AND stream_ordering <= ?)
                 OR (? <= stream_ordering AND stream_ordering <= ?)
             GROUP BY events.room_id
@@ -749,7 +749,7 @@ class StatsStore(StateDeltasStore):
 
         sql = """
             SELECT events.sender, COUNT(*) AS new_events, SUM(%s) AS new_bytes
-            FROM events INNER JOIN event_json USING (event_id)
+            FROM events INNER JOIN event_json ej USING (event_id)
             WHERE (? < stream_ordering AND stream_ordering <= ?)
                 OR (? <= stream_ordering AND stream_ordering <= ?)
             GROUP BY events.sender
